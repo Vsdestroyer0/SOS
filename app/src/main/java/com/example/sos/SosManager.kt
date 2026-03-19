@@ -2,10 +2,9 @@ package com.example.sos
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.renderscript.RenderScript
 import android.telephony.SmsManager
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import com.google.android.gms.location.Priority // IMPORTANTE: Asegúrate de usar este
 
 class SosManager(private val context: Context) {
     private val repository = SafeWalkRepository(context)
@@ -18,10 +17,11 @@ class SosManager(private val context: Context) {
 
         if (numero.isEmpty()) return
 
-        // Intentamos obtener la ubicación antes de enviar
-        fusedLocationClient.getCurrentLocation(RenderScript.Priority.PRIORITY_HIGH_ACCURACY, null)
+        // Usamos la prioridad de Google Play Services, no la de RenderScript
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location ->
                 val linkMaps = if (location != null) {
+                    // Formato correcto para que el receptor pueda abrir el mapa con un clic
                     "\nMi ubicación: https://www.google.com/maps?q=${location.latitude},${location.longitude}"
                 } else {
                     "\n(Ubicación no disponible)"
