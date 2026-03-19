@@ -21,18 +21,14 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Launcher actualizado para manejar el flujo de permisos y guardado
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val gpsOk = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         val smsOk = permissions[Manifest.permission.SEND_SMS] ?: false
 
-        // El permiso de segundo plano es opcional en la validación inicial para que no truene,
-        // pero idealmente el usuario debe aceptarlo en los ajustes.
 
         if (gpsOk && smsOk) {
-            // Ahora pasamos el context para que WorkManager pueda iniciarse
             viewModel.guardarConfiguracion(context)
             Toast.makeText(context, "Configuración guardada y rastreo actualizado", Toast.LENGTH_SHORT).show()
         } else {
@@ -60,7 +56,6 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Sección: Contacto de Emergencia
         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Contacto de Emergencia", fontWeight = FontWeight.Bold)
@@ -74,7 +69,6 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
             }
         }
 
-        // Sección: Mensaje de Auxilio
         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Mensaje de Auxilio", fontWeight = FontWeight.Bold)
@@ -92,7 +86,6 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
             }
         }
 
-        // Sección: Rastreo (Periodicidad sujeta a restricciones de Android)
         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -113,14 +106,11 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
 
         Button(
             onClick = {
-                // Preparamos la lista de permisos según la versión de Android
                 val permisos = mutableListOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.SEND_SMS
                 )
 
-                // Si es Android 10 o superior, el rastreo en 15 min requiere Background Location
-                // Nota: Google recomienda pedirlo por separado, pero para tu tésis esto funcionará
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && state.rastreoActivo) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }
