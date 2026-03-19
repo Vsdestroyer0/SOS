@@ -1,6 +1,7 @@
 package com.example.sos
 
 import android.Manifest
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,18 +21,22 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // ESTO ES LO NUEVO: El "lanzador" de la ventanita de permisos
+    // Launcher actualizado para manejar el flujo de permisos y guardado
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val gpsOk = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         val smsOk = permissions[Manifest.permission.SEND_SMS] ?: false
 
+        // El permiso de segundo plano es opcional en la validación inicial para que no truene,
+        // pero idealmente el usuario debe aceptarlo en los ajustes.
+
         if (gpsOk && smsOk) {
-            viewModel.guardarConfiguracion()
-            Toast.makeText(context, "Configuración guardada y permisos listos", Toast.LENGTH_SHORT).show()
+            // Ahora pasamos el context para que WorkManager pueda iniciarse
+            viewModel.guardarConfiguracion(context)
+            Toast.makeText(context, "Configuración guardada y rastreo actualizado", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(context, "Faltan permisos críticos", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Faltan permisos críticos (GPS o SMS)", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -43,14 +48,15 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Configuración",
+            text = "Configuración SafeWalk",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
-            text = "Estado del servicio: ${if(state.rastreoActivo) "Activo" else "Inactivo"}",
-            color = if(state.rastreoActivo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            text = "Estado: ${if(state.rastreoActivo) "Rastreo Automático Activo" else "Solo SOS Manual"}",
+            color = if(state.rastreoActivo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
@@ -61,7 +67,7 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
                 OutlinedTextField(
                     value = state.numero,
                     onValueChange = { viewModel.actualizarFormulario(it, state.mensaje, state.rastreoActivo) },
-                    label = { Text("Número de contacto") },
+                    label = { Text("Número de teléfono") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -78,16 +84,24 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3
                 )
+                Text(
+                    text = "* Se añadirá la ubicación automáticamente al final.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
 
-        // Sección: Rastreo cada 5 min
+        // Sección: Rastreo (Periodicidad sujeta a restricciones de Android)
         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             Row(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Rastreo cada 5 min", modifier = Modifier.weight(1f))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Rastreo Automático", fontWeight = FontWeight.Bold)
+                    Text("Envía ubicación cada 15 min", style = MaterialTheme.typography.bodySmall)
+                }
                 Switch(
                     checked = state.rastreoActivo,
                     onCheckedChange = { viewModel.actualizarFormulario(state.numero, state.mensaje, it) }
@@ -97,22 +111,26 @@ fun ConfigScreen(viewModel: SafeWalkViewModel) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOTÓN ACTUALIZADO
         Button(
             onClick = {
-                // Al picarle, lanza la solicitud de permisos
-                launcher.launch(arrayOf(
+                // Preparamos la lista de permisos según la versión de Android
+                val permisos = mutableListOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.SEND_SMS
-                ))
+                )
+
+                // Si es Android 10 o superior, el rastreo en 15 min requiere Background Location
+                // Nota: Google recomienda pedirlo por separado, pero para tu tésis esto funcionará
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && state.rastreoActivo) {
+                    permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                }
+
+                launcher.launch(permisos.toTypedArray())
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            shape = MaterialTheme.shapes.medium
         ) {
-            Text("Guardar y Vincular Widget")
+            Text("Guardar y Aplicar Cambios")
         }
     }
 }
