@@ -21,7 +21,6 @@ class SosManager(private val context: Context) {
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location ->
                 val linkMaps = if (location != null) {
-                    // Formato correcto para que el receptor pueda abrir el mapa con un clic
                     "\nMi ubicación: https://www.google.com/maps?q=${location.latitude},${location.longitude}"
                 } else {
                     "\n(Ubicación no disponible)"
@@ -33,8 +32,13 @@ class SosManager(private val context: Context) {
 
     private fun enviarSms(numero: String, texto: String) {
         try {
-            val smsManager = context.getSystemService(SmsManager::class.java)
-            smsManager.sendTextMessage(numero, null, texto, null, null)
+            val smsManager: SmsManager = context.getSystemService(SmsManager::class.java)
+                ?: SmsManager.getDefault() // Soporte para versiones antiguas o capas personalizadas
+
+            // Dividir el mensaje si es muy largo (evita que falle si el texto supera 160 chars)
+            val parts = smsManager.divideMessage(texto)
+            smsManager.sendMultipartTextMessage(numero, null, parts, null, null)
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
