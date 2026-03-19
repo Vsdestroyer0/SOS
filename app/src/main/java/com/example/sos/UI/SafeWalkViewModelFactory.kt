@@ -1,7 +1,8 @@
-package com.example.sos
+package com.example.sos.UI
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.sos.data.SafeWalkRepository
 
 class SafeWalkViewModelFactory(private val repository: SafeWalkRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

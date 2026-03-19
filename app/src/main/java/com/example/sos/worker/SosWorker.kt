@@ -1,8 +1,10 @@
-package com.example.sos
+package com.example.sos.worker
 
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.example.sos.data.SafeWalkRepository
+import com.example.sos.data.SosManager
 
 class SosWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     override fun doWork(): Result {

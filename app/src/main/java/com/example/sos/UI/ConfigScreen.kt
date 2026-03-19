@@ -1,4 +1,4 @@
-package com.example.sos
+package com.example.sos.UI
 
 import android.Manifest
 import android.os.Build

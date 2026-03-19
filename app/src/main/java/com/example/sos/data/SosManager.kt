@@ -1,10 +1,10 @@
-package com.example.sos
+package com.example.sos.data
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.telephony.SmsManager
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority // IMPORTANTE: Asegúrate de usar este
+import com.google.android.gms.location.Priority
 
 class SosManager(private val context: Context) {
     private val repository = SafeWalkRepository(context)

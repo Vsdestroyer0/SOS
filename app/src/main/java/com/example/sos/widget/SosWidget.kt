@@ -1,4 +1,4 @@
-package com.example.sos
+package com.example.sos.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.Button
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
 import androidx.glance.layout.*
@@ -14,6 +15,8 @@ import androidx.glance.text.TextStyle
 
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.text.FontWeight
+import com.example.sos.data.SosManager
 
 class SosWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -31,7 +34,7 @@ class SosWidget : GlanceAppWidget() {
         ) {
             Text(
                 text = "SafeWalk SOS",
-                style = TextStyle(fontWeight = androidx.glance.text.FontWeight.Bold)
+                style = TextStyle(fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = GlanceModifier.height(12.dp))
 
@@ -49,7 +52,7 @@ class SosActionCallback : ActionCallback {
     override suspend fun onAction(
         context: Context,
         glanceId: GlanceId,
-        parameters: androidx.glance.action.ActionParameters
+        parameters: ActionParameters
 
     ) {
         val sosManager = SosManager(context)

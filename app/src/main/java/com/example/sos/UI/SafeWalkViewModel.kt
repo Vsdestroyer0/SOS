@@ -1,8 +1,10 @@
-package com.example.sos
+package com.example.sos.UI
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.work.*
+import com.example.sos.worker.SosWorker
+import com.example.sos.data.SafeWalkRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

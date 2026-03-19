@@ -1,4 +1,4 @@
-package com.example.sos
+package com.example.sos.widget
 
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 
